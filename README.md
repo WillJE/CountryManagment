@@ -4,7 +4,7 @@
 
 运用BootStrap Model实现动态修改或新增内容，即时更新，使用OpenCSV实现导入和导出CSV数据到MySQL。
 
-![](E:\github\CountryManagment\countries\image\functions.gif)
+![](https://github.com/WillJE/CountryManagment/blob/master/countries/image/functions.gif)
 
 #### 技术栈
 
