@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <!--<script type="text/javascript" src="webjars/jquery/3.4.1/jquery.min.js"></script>-->
+    <!--<script type="text/javascript" src="webjars/bootstrap/4.3.1/js/bootstrap.min.js"></script>-->
+    <!--<link rel="stylesheet" href="webjars/bootstrap/4.3.1/css/bootstrap.min.css">-->
+    <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <title>CountriesCRUD</title>
+</head>
+<body>
+
+    <div class="container">
+        <div class="jumbotron jumbotron-fluid">
+            <div class="container">
+                <h1 class="display-4">Country Simple CRUD</h1>
+                <p class="lead">This is a simple CRUD project use SpringBoot,MySQL,SpringData JPA,Thymeleaf and Bootstrap4 .</p>
+            </div>
+        </div>
+        <!--upload form start -->
+        <div class="row">
+            <div class="col-md-4"></div>
+            <div class="col-md-5">
+                <form th:action="@{/upload}" method="post" enctype="multipart/form-data">
+                    <input type="file" name="file" id="file" />
+                    <input type="submit" name="submit" value="upload file" />
+                </form>
+            </div>
+            <div class="col-md-3"></div>
+        </div>
+        <!--upload form end -->
+
+        <hr/>
+
+        <div class="row">
+            <div class="col-md-4">
+                <button class="btn btn-success nBtn">New</button>
+            </div>
+            <div class="col-md-4">
+                <a class="btn btn-primary" th:href="@{/export}">Export All Data</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-block">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Country</th>
+                            <th>Capital</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="country: ${CountryList}">
+                            <td th:text="${country.id}"></td>
+                            <td th:text="${country.name}"></td>
+                            <td th:text="${country.capital}"></td>
+                            <td><a th:href="@{findOne/(id=${country.id})}" class="btn btn-primary eBtn">Edit</a></td>
+                            <td><a th:href="@{delete/(id=${country.id})}" class="btn btn-primary delBtn">Delete</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <hr/>
+        <!---分页开始-->
+        <div class="row" th:fragment="pagination">
+            <div class="col-md-2"></div>
+            <div class="col-md-8">
+                <nav aria-label="Pagination">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:each="pageNumber : ${pageNumbers}" >
+                            <a class="page-link" th:href="@{/(page=${pageNumber})}" th:text=${pageNumber} th:classappend="${currentPage}==${pageNumber}?'active':''">1</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="col-md-2"></div>
+        </div>
+        <!--分页结束-->
+    </div>
+
+
+
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Update or create</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form th:action="@{/save}" method="post" id="myForm">
+                        <div class="form-group">
+                            <label for="name" class="col-form-label">Name:</label>
+                            <input type="text" class="form-control" id="name" name="name" value="" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="capital" class="col-form-label">Capital:</label>
+                            <input type="text" class="form-control" id="capital" name="capital" value="" required>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <input type="submit" class="btn btn-primary" value="save"/>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" tabindex="-1" role="dialog" id="delModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this country?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <!--<button type="button" class="btn btn-primary">Save changes</button>-->
+                    <a href="" class="btn btn-danger" id="delRef">Delete</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $('.nBtn, .table .eBtn').on('click',function (event) {
+                event.preventDefault();
+                var href = $(this).attr('href');
+                var text = $(this).text();
+                if(text == 'Edit'){
+                    $.getJSON(href,function (country,status) {
+                        console.log(status);
+                        $('#myForm #id').val(country.id);
+                        $('#myForm #name').val(country.name);
+                        $('#myForm #capital').val(country.capital);
+                    });
+                    $('#exampleModal').modal();
+                }else{
+                    $('#myForm #id').val('');
+                    $('#myForm #name').val('');
+                    $('#myForm #capital').val('');
+                    $('#exampleModal').modal();
+                }
+            });
+            $('.table .delBtn').on('click',function (event) {
+                event.preventDefault();
+                var href = $(this).attr('href');
+                $('#delModal #delRef').attr('href',href);
+                $('#delModal').modal('toggle');
+            })
+        });
+    </script>
+</body>
+</html>
